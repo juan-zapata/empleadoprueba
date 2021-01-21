@@ -19,6 +19,7 @@ public class PersonaService {
     public void delete(Persona t) {dao.delete(t);}
     public Iterable<Persona> list() {return dao.findAll();}
     
+    
     public Optional<Persona> listId(long id) {return dao.findById(id);}
     
     

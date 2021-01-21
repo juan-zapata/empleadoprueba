@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,50 +20,64 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-
 @RestController
-@RequestMapping("/persona")
+@RequestMapping({"/persona"})
 @CrossOrigin("*")
-@Api(value="Employee Management System", description="Operations pertaining to employee in Employee Management System")
+@Api(value = "Employee Management System", description = "Operations pertaining to employee in Employee Management System")
 public class PersonaController {
-    
-@Autowired
-PersonaService personService;
 
-@ApiOperation(value = "Add a person")
-@PostMapping("/save")
-public long save(@ApiParam(value = "Employee object store in database table", required = true) @RequestBody Persona person){
-personService.save(person);
-return person.getIdPerson();
-}
+    @Autowired
+    PersonaService personService;
 
+    @ApiOperation(value = "Add a person")
+    @PostMapping("/save")
+    public long save(@ApiParam(value = "Employee object store in database table", required = true) @RequestBody Persona person) {
+        personService.save(person);
+        return person.getIdPerson();
+    }
 
-@ApiOperation(value = "View a list of available employees", response = List.class) 
-@ApiResponses(value = {
-@ApiResponse(code = 200, message = "Successfully retrieved list"),
-    @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-    @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+    @ApiOperation(value = "Update a person")
+    @PostMapping("/update/{id}")
+    public Persona update(@ApiParam(value = "Employee object update in database table", required = true) @RequestBody Persona person, @PathVariable("id") long id) {
+        person.setIdPerson(id);
+        return personService.update(person);
+    }
+
+    @ApiOperation(value = "Delete a person")
+    @DeleteMapping("/delete/{id}")
+    public void delete(@ApiParam(value = "Employee object deleted from database table", required = true) @PathVariable("id") int id) {
+        Optional<Persona> optionalPerson = personService.listId(id);
+        if (optionalPerson.isPresent()) {
+            Persona person = optionalPerson.get();
+            personService.delete(person);
+        }
+
+    }
+
+    @ApiOperation(value = "View a list of available employees", response = List.class)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Successfully retrieved list")
+        ,
+    @ApiResponse(code = 401, message = "You are not authorized to view the resource")
+        ,
+    @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+        ,
     @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-})     
-@GetMapping("/listAll")
-public Iterable<Persona> listAllPersons(){return personService.list();}
+    })
+    @GetMapping("/listAll")
+    public Iterable<Persona> listAllPersons() {return personService.list();}
 
-@ApiOperation(value = "Get a person by Id")
-@GetMapping("/list/{id}")
-public Persona listPersonById(@ApiParam(value = "Employee id from which employee object will retrieve", required = true) @PathVariable("id") int id){
-Optional<Persona> person= personService.listId(id);
-if(person.isPresent()){
-   return person.get();
-}
+    @ApiOperation(value = "Get a person by Id")
+    @GetMapping("/list/{id}")
+    public Persona listPersonById(@ApiParam(value = "Employee id from which employee object will retrieve", required = true)
+            @PathVariable("id") int id
+    ) {
+        Optional<Persona> person = personService.listId(id);
+        if (person.isPresent()) {
+            return person.get();
+        }
 
-throw new ModelNotFoundException("ID de persona invalido");
-}
-
-
-
-
-
-
-
+        throw new ModelNotFoundException("ID de persona invalido");
+    }
 
 }
